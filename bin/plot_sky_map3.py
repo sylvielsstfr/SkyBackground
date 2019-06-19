@@ -1,10 +1,11 @@
 import pylab as plt
+import os
 from scipy import *
 from scipy.optimize import leastsq
 import numpy as np
 import matplotlib
 from mpl_toolkits.basemap import Basemap
-import UVspec
+import UVspec3
 import glob
 from matplotlib.legend import Legend 
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
@@ -12,16 +13,26 @@ from matplotlib.font_manager import FontProperties
 
 from matplotlib.ticker import MultipleLocator, FormatStrFormatter
 
-png=True#False#
+############################################################################
+def ensure_dir(f):
+    d = os.path.dirname(f)
+    if not os.path.exists(f):
+        os.makedirs(f)
+#########################################################################
+
+
+png=False
 Normalize=True# False #
 sza=30
-fntype = '{:4.1f}'.format(sza)+'_'+'clearsky_reflectivity'
-#fntype = '{:4.1f}'.format(sza)+'_'+'aerosol_default_reflectivity'
+#fntype = '{:4.1f}'.format(sza)+'_'+'clearsky_reflectivity'
+fntype = '{:4.1f}'.format(sza)+'_'+'aerosol_default_reflectivity'
 
 if Normalize:
     pngfile = '../figs/fig_'+fntype.replace('.','_')+'_Normalized.png'
 else:
     pngfile = '../figs/fig_'+fntype.replace('.','_')+'.png'
+
+ensure_dir('../figs')
 
 fntype = '*'+fntype+'*'
 inpfiles = sort(glob.glob('input/'+fntype))
@@ -49,9 +60,9 @@ plot  = [231,232,233,234,235,236]
 i = 0
 for inpfile,outfile in zip(inpfiles,outfiles):
 
-    phi = UVspec.get_vals(inpfile,'phi')
+    phi = UVspec3.get_vals(inpfile,'phi')
     phis = [float(x) for x in phi]
-    umu = UVspec.get_vals(inpfile,'umu')
+    umu = UVspec3   .get_vals(inpfile,'umu')
     umus = [float(x) for x in umu]
     umu = np.arccos(np.array((umus)))*180/np.pi-90
     lat,lon = plt.meshgrid(phis, umu)
@@ -62,12 +73,12 @@ for inpfile,outfile in zip(inpfiles,outfiles):
 
     if Normalize:
         data=data/data.max()
-        levels = np.linspace(0, 1, 11)
+        levels = np.linspace(0, 1, 21)
     else:
         mind = data.min()
         maxd = data.max()
         levels = np.linspace(mind, maxd, 100)
-    CS = m.contourf(X,Y,data,levels)
+    CS = m.contourf(X,Y,data,levels,cmap="jet")
     m.drawparallels(plt.arange(0,90,20),labels=[1,1,1,1], fontsize=fontsize)
     m.drawmeridians(plt.arange(0,360,60),labels=[1,1,1,1],labelstyle='+/-', fontsize=fontsize)
 
@@ -84,5 +95,4 @@ for inpfile,outfile in zip(inpfiles,outfiles):
 if png:
     fig.savefig(pngfile, bbox_inches='tight')
 else:
-    plt.figure()
     plt.show()

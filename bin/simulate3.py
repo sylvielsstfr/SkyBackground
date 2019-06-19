@@ -1,7 +1,7 @@
 import os
 import math
 import numpy as np
-import UVspec
+import UVspec3
 
 home = os.environ['HOME']+'/'
 
@@ -18,7 +18,15 @@ home = os.environ['HOME']+'/'
 
 PDM_Altitude= 2.8905 # in km
 OBS_Altitude=str(PDM_Altitude)
-        
+
+############################################################################
+def ensure_dir(f):
+    d = os.path.dirname(f)
+    if not os.path.exists(f):
+        os.makedirs(f)
+#########################################################################
+
+
 def read_uu_map(fo, nphi, numu):
 
     # The reading of radiances is a bit complicated. They all come on one line for each
@@ -70,10 +78,12 @@ def write_uu_map(fo, uu, nphi, numu):
 
 if __name__ == "__main__":
 
+    ensure_dir('input')
+    ensure_dir('output')
 
     # Set up type of run
     runtype='clearsky' #'aerosol_default' #
-    sza=60
+    sza=30
     
     if runtype=='clearsky':
         outtext='clearsky'
@@ -98,10 +108,11 @@ if __name__ == "__main__":
 
     for wavelength in wavelengths:
         verbose=True
-        uvspec = UVspec.UVspec()
+        uvspec = UVspec3.UVspec()
 
         uvspec.inp["data_files_path"] = libradtranpath + 'data'
         uvspec.inp["atmosphere_file"] = libradtranpath + 'data/atmmod/' + 'afglus' + '.dat'
+
 
         #uvspec.inp["data_files_path"]  =  libradtranpathdata
         #uvspec.inp["atmosphere_file"] = libradtranpathatm+'/afglus.dat'
@@ -132,7 +143,8 @@ if __name__ == "__main__":
         uvspec.inp["phi"] = phis
         uvspec.inp["output_user"] = 'lambda zout eglo edir edn eup uu'
         uvspec.inp["zout"] = 'boa'
-        uvspec.inp["altitude"] = OBS_Altitude
+        #uvspec.inp["altitude"] = '0.600'
+        uvspec.inp["altitude"] =OBS_Altitude
         #uvspec.inp["source"] = 'solar '+libradtranpathdata+'/solar_flux/kurudz_1.0nm.dat'
         uvspec.inp["source"] = 'solar ' + libradtranpath + 'data/solar_flux/kurudz_1.0nm.dat'
         uvspec.inp["sza"]        = str(sza)
@@ -155,3 +167,4 @@ if __name__ == "__main__":
         #
         out0uu = out+'_uu'
         write_uu_map(out0uu,uu0,nphi,numu)
+
